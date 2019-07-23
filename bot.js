@@ -1,6 +1,9 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
+const CHANNEL = "ENTER YOUR CHANNEL ID";
+const TOKEN = "ENTER YOUR TOKEN";
+
 var users = [];
 var kickedUsers = [];
 var warnedUsers = [];
@@ -14,8 +17,8 @@ const message = {
 
 client.on('ready', () => {
   client.user.setActivity("the channel", {type: "WATCHING"});
-  let generalChannel = client.channels.get("ENTER YOUR CHANNEL ID");
-  generalChannel.send("Hello, i'm the support system of this channel. If you need anything ask me!");
+  let generalChannel = client.channels.get(CHANNEL);
+  generalChannel.send("Hello, i'm the support system of this channel. Type `!commands` to check the available commands. If you need anything ask me!");
 })
 
 client.on('message', (msg) => {
@@ -34,15 +37,24 @@ client.on('message', (msg) => {
     let commandName = commandParse[0];
     let args = commandParse.slice(1);
 
-    if (commandName == "help") {
+    if (commandName == "commands") {
+      msg.channel.send("Commands : \n\n 1. `!commands` : Display the available commands.\n\n" +
+       " 2. `!help [topic]` : Provide help on a certain topic.\n\n" +
+       " 3. `!clear` : Clear the chat.\n\n" +
+       " 4. `!about [username#0000]` : Display user information.");
+    }
+    else if (commandName == "help") {
       execHelp(args, msg);
     }
     else if (commandName == "clear") {
       msg.channel.send("Clearing the chat ...");
       execClear(msg);
     }
+    else if (commandName == "about") {
+      execGetUserInformation(msg, args);
+    }
     else {
-      msg.channel.send("Unknown command. Please try using `!help` or `!clear`");
+      msg.channel.send("Unknown command. Please try using `!commands` to see all the available commands");
     }
   }
 
@@ -60,6 +72,27 @@ client.on('message', (msg) => {
       msg.channel.bulkDelete(fetched);
     }
     clear();
+  }
+
+  //!check command that checks user
+  async function execGetUserInformation(msg, args) {
+    var flag = false;
+    await client.guilds.array().forEach(async g => {
+        await g.members.array().forEach(m => {
+            if (m.user.tag == args) {
+              msg.channel.send("Username : `" + m.user.username + "`\n\n" +
+              "Created at : `" + m.user.createdAt + "`\n\n" +
+              "Status : `" + m.presence.status + "`\n\n" +
+              "Server : `" + m.guild.name + "`\n\n" +
+              "Joined at : `" + m.joinedAt + "`");
+              if (m.user.verified) msg.channel.send("Account verified.");
+              else msg.channel.send("Account not verified.");
+              flag = true;
+              return;
+            }
+        });
+    });
+    if(!flag) msg.channel.send("User not found please try again!");
   }
 
   //user kick
@@ -114,4 +147,4 @@ client.on('message', (msg) => {
   }
 });
 
-client.login("ENTER YOUR TOKEN");
+client.login(TOKEN);
