@@ -58,7 +58,7 @@ client.on('message', (msg) => {
     }
   }
 
-  //!help command that provides help for a certain topic
+  //!help command that provides help on a certain topic
   function execHelp(args, msg) {
     if (args.length == 0) msg.channel.send("Please provide some more information, try using `!help [topic]`");
     else msg.channel.send("Dont worry i'm here to help you with " + args + "!");
@@ -74,7 +74,7 @@ client.on('message', (msg) => {
     clear();
   }
 
-  //!check command that checks user
+  //!about command that displays user information
   async function execGetUserInformation(msg, args) {
     var flag = false;
     await client.guilds.array().forEach(async g => {
