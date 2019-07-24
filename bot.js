@@ -1,12 +1,12 @@
 const Discord = require('discord.js');
 const client = new Discord.Client();
 
-const CHANNEL = "ENTER YOUR CHANNEL ID";
+const CHANNEL = "ENTER YOUR CHANNEL";
 const TOKEN = "ENTER YOUR TOKEN";
 
-var users = [];
-var kickedUsers = [];
-var warnedUsers = [];
+let users = [];
+let kickedUsers = [];
+let warnedUsers = [];
 const warnBuff = 3;
 const kickBuff = 5;
 const interval = 2000;
@@ -41,7 +41,8 @@ client.on('message', (msg) => {
       msg.channel.send("Commands : \n\n 1. `!commands` : Display the available commands.\n\n" +
        " 2. `!help [topic]` : Provide help on a certain topic.\n\n" +
        " 3. `!clear` : Clear the chat.\n\n" +
-       " 4. `!about [username#0000]` : Display user information.");
+       " 4. `!about [username#0000]` : Display user information.\n\n" +
+       " 5. `!playing [game]` : Display users that are currently playing a specific game.");
     }
     else if (commandName == "help") {
       execHelp(args, msg);
@@ -52,6 +53,10 @@ client.on('message', (msg) => {
     }
     else if (commandName == "about") {
       execGetUserInformation(msg, args);
+    }
+    else if (commandName == "playing") {
+      let game = args.join(" ");
+      execGetUsersPlaying(msg, game);
     }
     else {
       msg.channel.send("Unknown command. Please try using `!commands` to see all the available commands");
@@ -76,10 +81,11 @@ client.on('message', (msg) => {
 
   //!about command that displays user information
   async function execGetUserInformation(msg, args) {
-    var flag = false;
+    let flag = false;
+    let checkedUsers = [];
     await client.guilds.array().forEach(async g => {
         await g.members.array().forEach(m => {
-            if (m.user.tag == args) {
+            if (!checkedUsers.includes(m.user.tag) && m.user.tag == args) {
               msg.channel.send("Username : `" + m.user.username + "`\n\n" +
               "Created at : `" + m.user.createdAt + "`\n\n" +
               "Status : `" + m.presence.status + "`\n\n" +
@@ -88,11 +94,34 @@ client.on('message', (msg) => {
               if (m.user.verified) msg.channel.send("Account verified.");
               else msg.channel.send("Account not verified.");
               flag = true;
+              checkedUsers.push(m.user.tag);
               return;
             }
         });
     });
-    if(!flag) msg.channel.send("User not found please try again!");
+    if (!flag) msg.channel.send("User not found please try again!");
+  }
+
+  //!playing command that displays users that are currently playing a specific game
+  async function execGetUsersPlaying(msg, game) {
+    let flag = false;
+    let usersPlaying = [];
+    await client.guilds.array().forEach(async g => {
+        await g.members.array().forEach(m => {
+            if (m.user.presence.game != null && m.user.presence.game.name == game && !usersPlaying.includes(m.user.tag)) {
+              usersPlaying.push(m.user.tag);
+              flag = true;
+            }
+        });
+    });
+    if (!flag) msg.channel.send("No users are currently playing " + game);
+    else {
+      let response = "Users currently playing " + game + ":\n\n";
+      usersPlaying.forEach(u => {
+        response += "`" + u + "`" + "\n\n";
+      });
+      msg.channel.send(response);
+    }
   }
 
   //user kick
@@ -126,8 +155,8 @@ client.on('message', (msg) => {
     "time": currentTime
   });
 
-  var matchedUsers = 0;
-  for (var i = 0; i < users.length; i++) {
+  let matchedUsers = 0;
+  for (let i = 0; i < users.length; i++) {
     if (users[i].time > currentTime - interval) {
       matchedUsers++;
       if (matchedUsers >= warnBuff && matchedUsers < kickBuff && !warnedUsers.includes(msg.author.id)) {
