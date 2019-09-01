@@ -42,7 +42,9 @@ client.on('message', (msg) => {
        " 2. `!help [topic]` : Provide help on a certain topic.\n\n" +
        " 3. `!clear` : Clear the chat.\n\n" +
        " 4. `!about [username#0000]` : Display user information.\n\n" +
-       " 5. `!playing [game]` : Display users that are currently playing a specific game.");
+       " 5. `!playing [game]` : Display users that are currently playing a specific game.\n\n" +
+       " 6. `!ban [username#0000]` : Ban user from the server.\n\n" +
+       " 7. `!unban [username#0000]` : Remove ban from the user.");
     }
     else if (commandName == "help") {
       execHelp(args, msg);
@@ -57,6 +59,12 @@ client.on('message', (msg) => {
     else if (commandName == "playing") {
       let game = args.join(" ");
       execGetUsersPlaying(msg, game);
+    }
+    else if (commandName == "ban") {
+      execBanUser(msg, args);
+    }
+    else if (commandName == "unban") {
+      execUnbanUser(msg, args);
     }
     else {
       msg.channel.send("Unknown command. Please try using `!commands` to see all the available commands");
@@ -122,6 +130,34 @@ client.on('message', (msg) => {
       });
       msg.channel.send(response);
     }
+  }
+
+  //!ban command that bans a user from the server
+  async function execBanUser(msg, args) {
+    let flag = false;
+    await msg.guild.members.array().forEach(m => {
+        if (m.user.tag == args) {
+          msg.guild.ban(m);
+          flag = true;
+        }
+    });
+    if (!flag) msg.channel.send("User not found please try again!");
+    else msg.channel.send("User : `" + args + "` has been banned from the server.\n\n");
+  }
+
+  //!unban command that removes the ban from a user
+  async function execUnbanUser(msg, args) {
+    let flag = false;
+    await msg.guild.fetchBans().then(async bans => {
+      await bans.forEach(user => {
+        if (user.tag == args) {
+          msg.guild.unban(user);
+          flag = true;
+        }
+      });
+    });
+    if (!flag) msg.channel.send("User not found please try again!");
+    else msg.channel.send("User : `" + args + "` has been unbanned.\n\n");
   }
 
   //user kick
