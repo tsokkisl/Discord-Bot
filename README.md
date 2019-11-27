@@ -11,3 +11,5 @@ Commands
 * `!clear` : Clear the chat.
 * `!about [username#0000]` : Display user information.
 * `!playing [game]` : Display users that are currently playing a specific game.
+* `!ban [username#0000]` : Ban user from the server.
+* `!unban [username#0000]` : Remove ban from the user.
